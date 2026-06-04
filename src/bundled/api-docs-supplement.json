@@ -1,0 +1,160 @@
+{
+  "sections": [
+    {
+      "id": "automation",
+      "title": "Automation flows",
+      "description": "WhatsApp bot flows as JSON nodes and connections.",
+      "endpoints": [
+        { "title": "List flows", "method": "GET", "path": "/api/automation", "description": "List automation flows.", "payload": null },
+        { "title": "Node types", "method": "GET", "path": "/api/automation/node-types", "description": "Catalog of builder node types.", "payload": null },
+        { "title": "Get flow", "method": "GET", "path": "/api/automation/:flowId", "description": "Get one flow by id.", "payload": null },
+        { "title": "Create flow", "method": "POST", "path": "/api/automation", "description": "Create flow with nodes, connections, triggers.", "payload": { "name": "My flow", "nodes": [], "connections": [], "triggers": [{ "event_type": "message_received", "conditions": {} }] } },
+        { "title": "Update flow", "method": "PUT", "path": "/api/automation/:flowId", "description": "Update flow graph or metadata.", "payload": null },
+        { "title": "Toggle flow", "method": "PATCH", "path": "/api/automation/:flowId/toggle", "description": "Activate or deactivate.", "payload": { "is_active": true } },
+        { "title": "Test flow", "method": "POST", "path": "/api/automation/:flowId/test", "description": "Run flow with test_data.", "payload": { "test_data": { "senderNumber": "919876543210", "contactId": "" } } },
+        { "title": "Delete flow", "method": "DELETE", "path": "/api/automation/:flowId", "description": "Soft-delete flow.", "payload": null },
+        { "title": "List executions", "method": "GET", "path": "/api/automation/:flowId/executions", "description": "Execution logs for a flow.", "payload": null },
+        { "title": "Get execution", "method": "GET", "path": "/api/automation/executions/:executionId", "description": "Single execution detail.", "payload": null }
+      ]
+    },
+    {
+      "id": "conversations",
+      "title": "Conversations",
+      "description": "Debug inbox and message threads.",
+      "endpoints": [
+        { "title": "List chats", "method": "GET", "path": "/api/whatsapp/chats", "description": "Recent conversations.", "payload": null },
+        { "title": "List messages", "method": "GET", "path": "/api/whatsapp/messages", "description": "Thread messages; requires contact_id query.", "payload": null }
+      ]
+    },
+    {
+      "id": "crm",
+      "title": "CRM: segments, tags, custom fields",
+      "description": "Organize contacts for automations and campaigns.",
+      "endpoints": [
+        { "title": "List segments", "method": "GET", "path": "/api/segments", "description": "", "payload": null },
+        { "title": "Create segment", "method": "POST", "path": "/api/segments", "description": "", "payload": { "name": "New Leads", "description": "" } },
+        { "title": "List tags", "method": "GET", "path": "/api/tags", "description": "", "payload": null },
+        { "title": "Create tag", "method": "POST", "path": "/api/tags", "description": "", "payload": { "label": "Hot Lead", "color": "#e11d48" } },
+        { "title": "List custom fields", "method": "GET", "path": "/api/custom-fields", "description": "", "payload": null },
+        { "title": "Create custom field", "method": "POST", "path": "/api/custom-fields", "description": "", "payload": { "name": "interest", "label": "Interest", "type": "text" } },
+        { "title": "Get contact", "method": "GET", "path": "/api/contacts/:id", "description": "", "payload": null },
+        { "title": "Update contact", "method": "PUT", "path": "/api/contacts/:id", "description": "", "payload": { "name": "Jane", "custom_fields": { "interest": "demo" } } }
+      ]
+    },
+    {
+      "id": "industry-packs",
+      "title": "Industry packs",
+      "description": "Pre-built CRM, automations, and chatbots per vertical.",
+      "endpoints": [
+        { "title": "List public packs", "method": "GET", "path": "/api/industry-packs/public", "description": "Packs for signup (no auth).", "payload": null },
+        { "title": "Preview pack", "method": "GET", "path": "/api/industry-packs/public/:slug/preview", "description": "Preview with personalization query params.", "payload": null },
+        { "title": "Apply pack", "method": "POST", "path": "/api/industry-packs/apply", "description": "Provision tags, segments, flows for workspace.", "payload": { "pack_slug": "school", "personalization": { "company_name": "Acme School" } } },
+        { "title": "Resync pack flows", "method": "POST", "path": "/api/industry-packs/resync-flows", "description": "Refresh flows after pack personalization changes.", "payload": { "personalization": { "company_name": "Acme" } } }
+      ]
+    },
+    {
+      "id": "chatbots",
+      "title": "AI chatbots",
+      "description": "RAG/Q&A assistants; assign_chatbot automation node uses chatbot _id.",
+      "endpoints": [
+        { "title": "List chatbots", "method": "GET", "path": "/api/chatbots", "description": "Requires waba_id query.", "payload": null },
+        { "title": "Create chatbot", "method": "POST", "path": "/api/chatbots", "description": "", "payload": { "waba_id": "", "name": "Sales Assistant" } },
+        { "title": "Train chatbot", "method": "POST", "path": "/api/chatbots/:id/train", "description": "Q&A training_data.", "payload": null },
+        { "title": "Add Q&A source", "method": "POST", "path": "/api/chatbots/:id/knowledge-sources/qna", "description": "", "payload": { "training_data": [{ "question": "Hours?", "answer": "9-6" }] } }
+      ]
+    },
+    {
+      "id": "message-bots",
+      "title": "Message bots (keyword replies)",
+      "description": "Auto-reply when message matches keywords.",
+      "endpoints": [
+        { "title": "List message bots", "method": "GET", "path": "/api/message-bots", "description": "waba_id required.", "payload": null },
+        { "title": "Create message bot", "method": "POST", "path": "/api/message-bots", "description": "reply_id or text via reply material.", "payload": null }
+      ]
+    },
+    {
+      "id": "quick-replies",
+      "title": "Quick replies",
+      "description": "Agent inbox canned responses.",
+      "endpoints": [
+        { "title": "List", "method": "GET", "path": "/api/quick-replies", "description": "", "payload": null },
+        { "title": "Create", "method": "POST", "path": "/api/quick-replies", "description": "", "payload": { "content": "Thanks for reaching out!" } }
+      ]
+    },
+    {
+      "id": "forms",
+      "title": "WhatsApp Flow forms",
+      "description": "Meta Flow forms; form_flow node uses flow.flow_id from GET form.",
+      "endpoints": [
+        { "title": "List forms", "method": "GET", "path": "/api/forms", "description": "waba_id required.", "payload": null },
+        { "title": "Create form", "method": "POST", "path": "/api/forms", "description": "", "payload": { "waba_id": "", "name": "Lead Form", "fields": [] } },
+        { "title": "Publish form", "method": "PATCH", "path": "/api/forms/:id/publish", "description": "", "payload": null }
+      ]
+    },
+    {
+      "id": "ops",
+      "title": "Ops & integrations",
+      "description": "Agents, sequences, Google, usage, kanban, imports.",
+      "endpoints": [
+        { "title": "List agents", "method": "GET", "path": "/api/agent/all", "description": "", "payload": null },
+        { "title": "Assign chat", "method": "POST", "path": "/api/whatsapp/assign-chat", "description": "", "payload": { "contact_id": "", "whatsapp_phone_number_id": "", "agent_id": "" } },
+        { "title": "List sequences", "method": "GET", "path": "/api/sequences", "description": "waba_id required.", "payload": null },
+        { "title": "Google connect", "method": "GET", "path": "/api/google/connect", "description": "OAuth URL.", "payload": null },
+        { "title": "Write sheet", "method": "POST", "path": "/api/google/sheets/:sheet_id/values", "description": "", "payload": { "range": "A1", "values": [] } },
+        { "title": "Usage", "method": "GET", "path": "/api/subscriptions/usage", "description": "Plan limits.", "payload": null },
+        { "title": "Import contacts", "method": "POST", "path": "/api/contacts/import", "description": "multipart CSV.", "payload": null },
+        { "title": "Kanban funnels", "method": "GET", "path": "/api/kanban-funnels", "description": "", "payload": null }
+      ]
+    },
+    {
+      "id": "ecommerce-checkout",
+      "title": "Ecommerce checkout webhooks",
+      "description": "Order webhooks → WhatsApp templates with dynamic PDF headers.",
+      "endpoints": [
+        { "title": "Create webhook", "method": "POST", "path": "/api/ecommerce-webhook/create", "description": "", "payload": { "webhook_name": "Shopify orders" } },
+        { "title": "Map template", "method": "POST", "path": "/api/ecommerce-webhook/:id/map-template", "description": "Approved template + payload field paths.", "payload": { "template_id": "", "phone_number_field": "customer.phone", "variables": { "1": "order.id" } } },
+        { "title": "Send template (API)", "method": "POST", "path": "/api/whatsapp/send", "description": "messageType template + mediaUrl for dynamic header.", "payload": { "messageType": "template", "templateName": "checkout_invoice", "mediaUrl": "https://cdn.example.com/invoice.pdf" } }
+      ]
+    },
+    {
+      "id": "developer-polish",
+      "title": "Webhooks, catalogs, reply materials",
+      "description": "Tier 5: setup webhooks, commerce catalogs, saved replies.",
+      "endpoints": [
+        { "title": "Setup WABA webhooks", "method": "POST", "path": "/api/whatsapp/:wabaId/webhooks/setup", "description": "Meta Business API only.", "payload": null },
+        { "title": "Sync template status", "method": "POST", "path": "/api/template/sync-status", "description": "Requires waba_id in body.", "payload": { "waba_id": "" } },
+        { "title": "List reply materials", "method": "GET", "path": "/api/reply-materials", "description": "waba_id query.", "payload": null },
+        { "title": "Sync catalogs", "method": "POST", "path": "/api/ecommerce-catalog/waba/:waba_id/sync-catalogs", "description": "", "payload": null },
+        { "title": "Catalog products", "method": "GET", "path": "/api/ecommerce-catalog/catalog/:catalog_id/products", "description": "", "payload": null },
+        { "title": "Automation statistics", "method": "GET", "path": "/api/automation/statistics", "description": "", "payload": null }
+      ]
+    },
+    {
+      "id": "template-ops",
+      "title": "Template operations",
+      "description": "Update and validate templates.",
+      "endpoints": [
+        { "title": "Update template", "method": "PUT", "path": "/api/template/:id", "description": "Edit template before resubmit.", "payload": { "message_body": "Updated body" } },
+        { "title": "Validate media URL", "method": "POST", "path": "/api/template/validate-media-url", "description": "", "payload": { "url": "https://example.com/file.pdf" } }
+      ]
+    }
+  ],
+  "faqs": [
+    {
+      "question": "How do I send an approved WhatsApp template?",
+      "answer": "POST /api/whatsapp/send with messageType template, template_name (or template_id), templateVariables, contact_no, and whatsapp_phone_number."
+    },
+    {
+      "question": "How do automations save data to CRM?",
+      "answer": "Use update_contact nodes with field_key matching custom field names from GET /api/custom-fields. Use add_to_segment with segment_id from GET /api/segments."
+    },
+    {
+      "question": "What form_id for form_flow automation nodes?",
+      "answer": "Call messlo_get_form and use data.flow.flow_id (Meta Flow id), not the MongoDB form _id."
+    },
+    {
+      "question": "How do I set up keyword auto-replies?",
+      "answer": "Use messlo_create_message_bot with keywords and reply_content for simple text replies."
+    }
+  ]
+}

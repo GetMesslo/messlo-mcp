@@ -1,0 +1,1176 @@
+{
+  "generatedAt": "2026-06-04T10:31:58.673Z",
+  "sectionIds": [
+    "infrastructure",
+    "whatsapp-auth",
+    "contacts",
+    "conversational",
+    "template",
+    "campaign",
+    "automation",
+    "crm",
+    "bots",
+    "forms",
+    "industry-packs",
+    "ops",
+    "ecommerce"
+  ],
+  "sections": [
+    {
+      "id": "infrastructure",
+      "title": "WhatsApp Configuration",
+      "description": "Handle WhatsApp account connections and numbers. Call these endpoints first to obtain waba_id and phone numbers.",
+      "endpoints": [
+        {
+          "title": "WhatsApp Configuration",
+          "method": "GET",
+          "path": "/api/whatsapp/connections",
+          "description": "Handle WhatsApp account connections and numbers. Call these endpoints first to obtain waba_id and phone numbers.",
+          "payload": null
+        },
+        {
+          "title": "Fetch All Phone Numbers",
+          "method": "GET",
+          "path": "/api/whatsapp/phone-numbers",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Fetch WABA-Specific Phone Numbers",
+          "method": "GET",
+          "path": "/api/whatsapp/:wabaId/phone-numbers",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Setup WABA webhooks (Meta)",
+          "method": "POST",
+          "path": "/api/whatsapp/:wabaId/webhooks/setup",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Sync workspace from Meta",
+          "method": "POST",
+          "path": "/api/whatsapp/workspace/sync",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "whatsapp-auth",
+      "title": "Login with WhatsApp",
+      "description": "Verify users via WhatsApp without OTP: create a Login app in Messlo, then integrate with @getmesslo/messlo-node-sdk and @getmesslo/messlo-whatsapp-login (recommended) or call the REST endpoints below. Example app: github.com/GetMesslo/nextjs-whatsapp-login-demo. Each Login app stores whether users message your WABA or Messlo's shared number; Messlo returns a verification JWT — validate it on your server and issue your own session.",
+      "endpoints": [
+        {
+          "title": "Login with WhatsApp",
+          "method": "POST",
+          "path": "/v1/auth/whatsapp/start",
+          "description": "Verify users via WhatsApp without OTP: create a Login app in Messlo, then integrate with @getmesslo/messlo-node-sdk and @getmesslo/messlo-whatsapp-login (recommended) or call the REST endpoints below. Example app: github.com/GetMesslo/nextjs-whatsapp-login-demo. Each Login app stores whether users message your WABA or Messlo's shared number; Messlo returns a verification JWT — validate it on your server and issue your own session.",
+          "payload": {
+            "use_messlo_phone": false,
+            "phone_number_id": "123456789012345",
+            "device_hash": "sha256-device-fingerprint-optional"
+          }
+        },
+        {
+          "title": "Listen for verification (SSE)",
+          "method": "GET",
+          "path": "/v1/auth/whatsapp/events/:sessionId?token={subscribeToken}",
+          "description": "Open a Server-Sent Events stream using subscribeToken from /start. Messlo pushes verified when Meta webhook receives the user's LOGIN message — preferred over polling at scale.",
+          "payload": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        {
+          "title": "Get verification token (optional poll)",
+          "method": "GET",
+          "path": "/v1/auth/whatsapp/status/:sessionId",
+          "description": "One-shot or fallback poll after SSE verified (or if you cannot use SSE). Returns verificationToken when the session is success.",
+          "payload": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        {
+          "title": "Verify token (server-side)",
+          "method": "POST",
+          "path": "/v1/auth/verify-token",
+          "description": "Your backend validates the Messlo-signed JWT and receives the verified phone and profile name. Token is single-use. Issue your own app JWT/session after this call.",
+          "payload": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        }
+      ]
+    },
+    {
+      "id": "contacts",
+      "title": "Contact Management System",
+      "description": "Organize contacts and their associations.",
+      "endpoints": [
+        {
+          "title": "Contact Management System",
+          "method": "POST",
+          "path": "/api/contacts",
+          "description": "Organize contacts and their associations.",
+          "payload": {
+            "phone_number": "+919876543210",
+            "name": "John Doe",
+            "email": "john@example.com"
+          }
+        },
+        {
+          "title": "List Contacts",
+          "method": "GET",
+          "path": "/api/contacts",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "conversational",
+      "title": "Interactive Messaging API",
+      "description": "Deliver engaging messages to your contacts",
+      "endpoints": [
+        {
+          "title": "Interactive Messaging API",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "Deliver engaging messages to your contacts",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "messageType": "text",
+            "message": "Hello! How can I help you today?"
+          }
+        },
+        {
+          "title": "Upload Image (URL)",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "messageType": "image",
+            "message": "Check this out!",
+            "mediaUrl": "https://example.com/image.jpg"
+          }
+        },
+        {
+          "title": "Send Media from Local Device",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": {
+            "file_url": "(binary)",
+            "whatsapp_phone_number_id": "69dcc448629a287a66cdfc8b",
+            "contact_id": "697f22fc2f2ef5e92a7cdf9a",
+            "message": "",
+            "provider": "business_api",
+            "messageType": "image"
+          }
+        },
+        {
+          "title": "Upload Document (URL)",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "messageType": "document",
+            "message": "Please read the attached report",
+            "mediaUrl": "https://example.com/report.pdf"
+          }
+        },
+        {
+          "title": "Send Audio via URL",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "messageType": "audio",
+            "mediaUrl": "https://example.com/audio.mp3"
+          }
+        },
+        {
+          "title": "Send Video via URL",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "messageType": "video",
+            "message": "Watch this!",
+            "mediaUrl": "https://example.com/video.mp4"
+          }
+        },
+        {
+          "title": "Send Multiple Media via URLs",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "Sends multiple media files in sequence using public URLs.",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "mediaUrls": [
+              "https://example.com/image1.jpg",
+              "https://example.com/image2.png",
+              "https://example.com/video.mp4"
+            ],
+            "message": "Here are your files!"
+          }
+        },
+        {
+          "title": "Share Location Info",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Send approved template",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "messageType": "template",
+            "templateName": "order_update",
+            "templateVariables": {
+              "1": "Jane",
+              "2": "ORDER-123"
+            },
+            "mediaUrl": "https://cdn.example.com/invoices/order-123.pdf"
+          }
+        },
+        {
+          "title": "List recent chats",
+          "method": "GET",
+          "path": "/api/whatsapp/chats",
+          "description": "",
+          "payload": {
+            "contact_id": "64a1contact01",
+            "whatsapp_phone_number_id": "64a1phone01",
+            "agent_id": "64a1agent01"
+          }
+        },
+        {
+          "title": "List messages in thread",
+          "method": "GET",
+          "path": "/api/whatsapp/messages",
+          "description": "",
+          "payload": {
+            "contact_id": "64a1contact01",
+            "whatsapp_phone_number_id": "64a1phone01",
+            "agent_id": "64a1agent01"
+          }
+        },
+        {
+          "title": "Assign chat to agent",
+          "method": "POST",
+          "path": "/api/whatsapp/assign-chat",
+          "description": "",
+          "payload": {
+            "contact_id": "64a1contact01",
+            "whatsapp_phone_number_id": "64a1phone01",
+            "agent_id": "64a1agent01"
+          }
+        }
+      ]
+    },
+    {
+      "id": "template",
+      "title": "Messaging Templates API",
+      "description": "Manage and send predefined WhatsApp message templates.",
+      "endpoints": [
+        {
+          "title": "Messaging Templates API",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "Manage and send predefined WhatsApp message templates.",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "simple_announcement",
+            "category": "MARKETING",
+            "language": "en_US",
+            "message_body": "This is a simple announcement for the season.",
+            "footer_text": "Thank you"
+          }
+        },
+        {
+          "title": "Template with Variables",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "welcome_offer",
+            "category": "MARKETING",
+            "language": "en_US",
+            "template_type": "standard",
+            "header_text": "Hello {{name}}!",
+            "message_body": "Hi {{1}}, your order {{2}} has been confirmed. Total: {{3}}.",
+            "footer_text": "Reply STOP to unsubscribe",
+            "variable_examples": [
+              {
+                "key": "1",
+                "example": "John"
+              },
+              {
+                "key": "2",
+                "example": "ORD-9876"
+              },
+              {
+                "key": "3",
+                "example": "$49.99"
+              }
+            ]
+          }
+        },
+        {
+          "title": "OTP / Authentication Template",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "category must be AUTHENTICATION — enables OTP-specific fields and buttons.",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "otp_verification",
+            "category": "AUTHENTICATION",
+            "language": "en_US",
+            "add_security_recommendation": true,
+            "code_expiration_minutes": 10,
+            "otp_code_length": 6,
+            "otp_buttons": [
+              {
+                "otp_type": "COPY_CODE",
+                "copy_button_text": "Copy Code"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Template with Quick Reply Buttons",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "feedback_request",
+            "category": "UTILITY",
+            "language": "en_US",
+            "message_body": "How was your experience?",
+            "buttons": [
+              {
+                "type": "quick_reply",
+                "text": "Excellent"
+              },
+              {
+                "type": "quick_reply",
+                "text": "Good"
+              },
+              {
+                "type": "quick_reply",
+                "text": "Poor"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Template with CTA Buttons",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "contact_us",
+            "category": "MARKETING",
+            "language": "en_US",
+            "message_body": "Please contact us or visit our website.",
+            "buttons": [
+              {
+                "type": "phone_call",
+                "text": "Call Support",
+                "phone_number": "+1234567890"
+              },
+              {
+                "type": "website",
+                "text": "Visit Website",
+                "website_url": "https://example.com"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Template with Coupon Code",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "discount_coupon",
+            "category": "MARKETING",
+            "language": "en_US",
+            "message_body": "Here is your discount code!",
+            "buttons": [
+              {
+                "type": "copy_code",
+                "text": "SAVE20"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Limited Time Offer Template",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "flash_sale",
+            "category": "MARKETING",
+            "language": "en_US",
+            "message_body": "Flash sale is ending soon!",
+            "is_limited_time_offer": true,
+            "offer_text": "Use code FLASH at checkout",
+            "has_expiration": true
+          }
+        },
+        {
+          "title": "Template with Catalog Button",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "shop_catalog",
+            "category": "MARKETING",
+            "language": "en_US",
+            "message_body": "Check out our new catalog!",
+            "buttons": [
+              {
+                "type": "catalog",
+                "text": "View Catalog"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Template with Call Permission",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "call_request",
+            "category": "MARKETING",
+            "language": "en_US",
+            "message_body": "Can we call you to discuss our offers?",
+            "call_permission": true
+          }
+        },
+        {
+          "title": "Carousel Template",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Template with document header (URL)",
+          "method": "POST",
+          "path": "/api/template/create",
+          "description": "Use a public HTTPS URL for the sample PDF/image/video header. Meta requires the URL to be reachable at create time.",
+          "payload": {
+            "waba_id": "1248119146671221",
+            "template_name": "checkout_invoice",
+            "category": "UTILITY",
+            "language": "en_US",
+            "message_body": "Hi {{1}}, your order {{2}} is ready.",
+            "header_url": "https://cdn.example.com/samples/invoice-sample.pdf",
+            "header_media_type": "document"
+          }
+        },
+        {
+          "title": "Validate template media URL",
+          "method": "POST",
+          "path": "/api/template/validate-media-url",
+          "description": "",
+          "payload": {
+            "url": "https://cdn.example.com/samples/invoice-sample.pdf",
+            "media_type": "document"
+          }
+        },
+        {
+          "title": "Sync template approval status",
+          "method": "POST",
+          "path": "/api/template/sync-status",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "campaign",
+      "title": "Broadcast API",
+      "description": "Launch and control bulk messaging campaigns.",
+      "endpoints": [
+        {
+          "title": "Broadcast API",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "Launch and control bulk messaging campaigns.",
+          "payload": {
+            "name": "March Newsletter",
+            "waba_id": "1248119146671221",
+            "template_name": "newsletter_template",
+            "recipient_type": "all_contacts",
+            "variables_mapping": {
+              "1": "John",
+              "2": "March 2026"
+            }
+          }
+        },
+        {
+          "title": "Setup Campaign (Specific Contacts)",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": {
+            "name": "March Newsletter",
+            "waba_id": "1248119146671221",
+            "template_name": "newsletter_template",
+            "recipient_type": "specific_contacts",
+            "contact_numbers": [
+              "91766787866678",
+              "877677687788"
+            ],
+            "variables_mapping": {
+              "1": "John",
+              "2": "March 2026"
+            }
+          }
+        },
+        {
+          "title": "Setup Scheduled Campaign (By Tags)",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": {
+            "name": "Scheduled Reminder",
+            "waba_id": "1248119146671221",
+            "template_name": "reminder_template",
+            "recipient_type": "tags",
+            "tag_ids": [
+              "64a1b2c3d4e5f6789abcdtag"
+            ],
+            "is_scheduled": true,
+            "scheduled_at": "2026-04-15T10:00:00Z"
+          }
+        },
+        {
+          "title": "Setup Campaign with Media",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": {
+            "name": "Media Announcement",
+            "waba_id": "1248119146671221",
+            "template_name": "media_offer",
+            "recipient_type": "all_contacts",
+            "media_url": "https://example.com/banner.jpg"
+          }
+        },
+        {
+          "title": "Setup Campaign with Dynamic Coupon",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": {
+            "name": "Discount Campaign",
+            "waba_id": "1248119146671221",
+            "template_name": "coupon_offer",
+            "recipient_type": "all_contacts",
+            "coupon_code": "SPRING20"
+          }
+        },
+        {
+          "title": "Setup Campaign for Limited Time Offer",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": {
+            "name": "Flash Sale Campaign",
+            "waba_id": "1248119146671221",
+            "template_name": "flash_sale",
+            "recipient_type": "all_contacts",
+            "offer_expiration_minutes": 60
+          }
+        },
+        {
+          "title": "Setup Campaign with Product Carousel",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": {
+            "name": "Catalog Carousel",
+            "waba_id": "1248119146671221",
+            "template_name": "product_carousel",
+            "recipient_type": "all_contacts",
+            "carousel_products": [
+              {
+                "product_retailer_id": "prod_1",
+                "catalog_id": "cat_1"
+              },
+              {
+                "product_retailer_id": "prod_2",
+                "catalog_id": "cat_1"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Setup Campaign with Media Carousel",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Setup Campaign with Media Carousel (Local Files)",
+          "method": "POST",
+          "path": "/api/campaigns",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Campaign List",
+          "method": "GET",
+          "path": "/api/campaigns",
+          "description": "List existing campaigns and statuses before creating a new send.",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "automation",
+      "title": "Automation flows",
+      "description": "WhatsApp bot flows as JSON (nodes, connections, triggers). Build in the dashboard or use @getmesslo/messlo-mcp (messlo_compose_automation_flow, industry packs).",
+      "endpoints": [
+        {
+          "title": "Automation flows",
+          "method": "GET",
+          "path": "/api/automation",
+          "description": "WhatsApp bot flows as JSON (nodes, connections, triggers). Build in the dashboard or use @getmesslo/messlo-mcp (messlo_compose_automation_flow, industry packs).",
+          "payload": {
+            "name": "Welcome flow",
+            "is_active": false,
+            "nodes": [],
+            "connections": [],
+            "triggers": [
+              {
+                "event_type": "message_received",
+                "conditions": {}
+              }
+            ]
+          }
+        },
+        {
+          "title": "Node types catalog",
+          "method": "GET",
+          "path": "/api/automation/node-types",
+          "description": "",
+          "payload": {
+            "name": "Welcome flow",
+            "is_active": false,
+            "nodes": [],
+            "connections": [],
+            "triggers": [
+              {
+                "event_type": "message_received",
+                "conditions": {}
+              }
+            ]
+          }
+        },
+        {
+          "title": "Create automation flow",
+          "method": "POST",
+          "path": "/api/automation",
+          "description": "",
+          "payload": {
+            "name": "Welcome flow",
+            "is_active": false,
+            "nodes": [],
+            "connections": [],
+            "triggers": [
+              {
+                "event_type": "message_received",
+                "conditions": {}
+              }
+            ]
+          }
+        },
+        {
+          "title": "Toggle flow active",
+          "method": "POST",
+          "path": "/api/automation/:flowId/test",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "List executions",
+          "method": "GET",
+          "path": "/api/automation/:flowId/executions",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "crm",
+      "title": "CRM: segments, tags & custom fields",
+      "description": "Organize contacts for automations (add_to_segment, add_tag, update_contact nodes) and broadcast campaigns.",
+      "endpoints": [
+        {
+          "title": "CRM: segments, tags & custom fields",
+          "method": "GET",
+          "path": "/api/segments",
+          "description": "Organize contacts for automations (add_to_segment, add_tag, update_contact nodes) and broadcast campaigns.",
+          "payload": null
+        },
+        {
+          "title": "Create segment",
+          "method": "POST",
+          "path": "/api/segments",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "List tags",
+          "method": "GET",
+          "path": "/api/tags",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Create tag",
+          "method": "POST",
+          "path": "/api/tags",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "List custom fields",
+          "method": "GET",
+          "path": "/api/custom-fields",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Update contact",
+          "method": "PUT",
+          "path": "/api/contacts/:id",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "bots",
+      "title": "AI chatbots & keyword bots",
+      "description": "AI assistants (assign_chatbot nodes) and keyword auto-replies (message bots). Quick replies are agent inbox shortcuts.",
+      "endpoints": [
+        {
+          "title": "AI chatbots & keyword bots",
+          "method": "GET",
+          "path": "/api/chatbots",
+          "description": "AI assistants (assign_chatbot nodes) and keyword auto-replies (message bots). Quick replies are agent inbox shortcuts.",
+          "payload": null
+        },
+        {
+          "title": "Create chatbot",
+          "method": "POST",
+          "path": "/api/chatbots",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Train chatbot (Q&A)",
+          "method": "POST",
+          "path": "/api/chatbots/:id/train",
+          "description": "",
+          "payload": {
+            "training_data": [
+              {
+                "question": "What are your hours?",
+                "answer": "9 AM – 6 PM"
+              }
+            ]
+          }
+        },
+        {
+          "title": "List message bots",
+          "method": "GET",
+          "path": "/api/message-bots",
+          "description": "",
+          "payload": {
+            "waba_id": "64a1b2c3d4e5f6789abcdef0",
+            "keywords": [
+              "pricing",
+              "price"
+            ],
+            "reply_id": "64a1reply01"
+          }
+        },
+        {
+          "title": "Create message bot",
+          "method": "POST",
+          "path": "/api/message-bots",
+          "description": "",
+          "payload": {
+            "waba_id": "64a1b2c3d4e5f6789abcdef0",
+            "keywords": [
+              "pricing",
+              "price"
+            ],
+            "reply_id": "64a1reply01"
+          }
+        },
+        {
+          "title": "List quick replies",
+          "method": "GET",
+          "path": "/api/quick-replies",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "forms",
+      "title": "WhatsApp Flow forms",
+      "description": "Meta Flow lead forms. In automations, form_flow nodes use flow.flow_id from GET form (not the MongoDB form _id).",
+      "endpoints": [
+        {
+          "title": "WhatsApp Flow forms",
+          "method": "GET",
+          "path": "/api/forms",
+          "description": "Meta Flow lead forms. In automations, form_flow nodes use flow.flow_id from GET form (not the MongoDB form _id).",
+          "payload": null
+        },
+        {
+          "title": "Create form",
+          "method": "POST",
+          "path": "/api/forms",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "industry-packs",
+      "title": "Industry packs",
+      "description": "One-shot vertical onboarding: CRM fields, tags, segments, automation flows, and chatbot presets per industry.",
+      "endpoints": [
+        {
+          "title": "Industry packs",
+          "method": "GET",
+          "path": "/api/industry-packs/public",
+          "description": "One-shot vertical onboarding: CRM fields, tags, segments, automation flows, and chatbot presets per industry.",
+          "payload": {
+            "pack_slug": "school",
+            "personalization": {
+              "company_name": "Acme School"
+            }
+          }
+        },
+        {
+          "title": "Preview pack",
+          "method": "GET",
+          "path": "/api/industry-packs/public/:slug/preview",
+          "description": "",
+          "payload": {
+            "pack_slug": "school",
+            "personalization": {
+              "company_name": "Acme School"
+            }
+          }
+        },
+        {
+          "title": "Apply pack",
+          "method": "POST",
+          "path": "/api/industry-packs/apply",
+          "description": "",
+          "payload": {
+            "pack_slug": "school",
+            "personalization": {
+              "company_name": "Acme School"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "ops",
+      "title": "Ops & integrations",
+      "description": "Agents, drip sequences, Google Sheets/Calendar, plan usage, kanban pipelines, and bulk imports.",
+      "endpoints": [
+        {
+          "title": "Ops & integrations",
+          "method": "GET",
+          "path": "/api/subscriptions/usage",
+          "description": "Agents, drip sequences, Google Sheets/Calendar, plan usage, kanban pipelines, and bulk imports.",
+          "payload": {
+            "contact_id": "64a1contact01",
+            "whatsapp_phone_number_id": "64a1phone01",
+            "agent_id": "64a1agent01"
+          }
+        },
+        {
+          "title": "List agents",
+          "method": "GET",
+          "path": "/api/agent/all",
+          "description": "",
+          "payload": {
+            "contact_id": "64a1contact01",
+            "whatsapp_phone_number_id": "64a1phone01",
+            "agent_id": "64a1agent01"
+          }
+        },
+        {
+          "title": "Assign chat to agent",
+          "method": "POST",
+          "path": "/api/whatsapp/assign-chat",
+          "description": "",
+          "payload": {
+            "contact_id": "64a1contact01",
+            "whatsapp_phone_number_id": "64a1phone01",
+            "agent_id": "64a1agent01"
+          }
+        },
+        {
+          "title": "Google OAuth connect",
+          "method": "GET",
+          "path": "/api/google/connect",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "List sequences",
+          "method": "GET",
+          "path": "/api/sequences",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "List kanban funnels",
+          "method": "GET",
+          "path": "/api/kanban-funnels",
+          "description": "",
+          "payload": null
+        }
+      ]
+    },
+    {
+      "id": "ecommerce",
+      "title": "Commerce & checkout",
+      "description": "Meta catalogs, order webhooks (Shopify/WooCommerce), and template sends with dynamic header media (e.g. per-order PDF via mediaUrl).",
+      "endpoints": [
+        {
+          "title": "Commerce & checkout",
+          "method": "POST",
+          "path": "/api/ecommerce-catalog/waba/:waba_id/sync-catalogs",
+          "description": "Meta catalogs, order webhooks (Shopify/WooCommerce), and template sends with dynamic header media (e.g. per-order PDF via mediaUrl).",
+          "payload": null
+        },
+        {
+          "title": "List catalog products",
+          "method": "GET",
+          "path": "/api/ecommerce-catalog/catalog/:catalog_id/products",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Create order webhook",
+          "method": "POST",
+          "path": "/api/ecommerce-webhook/create",
+          "description": "",
+          "payload": null
+        },
+        {
+          "title": "Map template to webhook",
+          "method": "POST",
+          "path": "/api/ecommerce-webhook/:id/map-template",
+          "description": "",
+          "payload": {
+            "template_id": "64a1template01",
+            "phone_number_field": "customer.phone",
+            "variables": {
+              "1": "order.name",
+              "header": "invoice.pdf_url"
+            }
+          }
+        },
+        {
+          "title": "Send template with dynamic PDF header",
+          "method": "POST",
+          "path": "/api/whatsapp/send",
+          "description": "",
+          "payload": {
+            "contact_no": "919876543210",
+            "whatsapp_phone_number": "911234567890",
+            "messageType": "template",
+            "templateName": "checkout_invoice",
+            "templateVariables": {
+              "1": "Jane",
+              "2": "ORDER-123"
+            },
+            "mediaUrl": "https://cdn.example.com/invoices/order-123.pdf"
+          }
+        }
+      ]
+    }
+  ],
+  "faqs": [
+    {
+      "question": "What is the easiest way to implement the WhatsApp Business API?",
+      "answer": "Use Messlo’s REST API: connect your WABA once in the dashboard, generate an API key, and call documented endpoints with standard HTTP tools (cURL, Postman, or any SDK). You avoid direct Meta app review complexity for common messaging, contacts, templates, and campaigns."
+    },
+    {
+      "question": "How do I send a WhatsApp message via API?",
+      "answer": "Authenticate with X-API-Key, obtain your phone_number_id from GET /api/whatsapp/phone-numbers, then POST to /api/whatsapp/send (session messages) or use template endpoints for marketing and notifications."
+    },
+    {
+      "question": "Is this the official WhatsApp Business API?",
+      "answer": "Yes. Messlo integrates with the WhatsApp Business Platform (Cloud API). Your messages are sent through your connected WABA and comply with Meta’s messaging policies and template rules."
+    },
+    {
+      "question": "How does API authentication work?",
+      "answer": "Include your API key in the X-API-Key header or as Authorization: ApiKey <your_key>. JWT Bearer tokens are used for dashboard sessions; server-to-server integrations should use API keys."
+    },
+    {
+      "question": "Can I send bulk WhatsApp messages or campaigns via API?",
+      "answer": "Yes. Use the Broadcast API to create campaigns, attach an approved template, and send to contact lists or segments. List campaigns with GET /api/campaigns before creating new sends."
+    },
+    {
+      "question": "How does Login with WhatsApp work?",
+      "answer": "Create a Login app in the Messlo dashboard (choose your WhatsApp Business number or Messlo's shared number). Use @getmesslo/messlo-node-sdk and @getmesslo/messlo-whatsapp-login for production integrations, or call POST /v1/auth/whatsapp/start with your app API key to get a waLink. The user sends the pre-filled LOGIN message on WhatsApp. Listen via SSE on GET /v1/auth/whatsapp/events/:sessionId or poll GET /status until you receive verificationToken, then POST /v1/auth/verify-token on your backend. Full guide: /developers/login-with-whatsapp. Example repo: github.com/GetMesslo/nextjs-whatsapp-login-demo."
+    },
+    {
+      "question": "Are there official SDKs for Login with WhatsApp?",
+      "answer": "Yes. @getmesslo/messlo-node-sdk provides backend helpers and Next.js/Express route adapters. @getmesslo/messlo-whatsapp-login provides a React hook and UI components for your frontend (via your proxy routes). See npmjs.com/package/@getmesslo/messlo-node-sdk and npmjs.com/package/@getmesslo/messlo-whatsapp-login."
+    },
+    {
+      "question": "Where can LLMs and tools find a summary of this API?",
+      "answer": "A machine-readable summary is available at /llms.txt on this site, alongside this HTML documentation page. Install @getmesslo/messlo-mcp in Cursor for natural-language setup (messlo_plan_integration goals: inbound_automation, ecommerce_checkout, industry_pack_onboarding, and more)."
+    },
+    {
+      "question": "How do I build WhatsApp automation flows via API?",
+      "answer": "POST /api/automation with nodes, connections, and triggers (typically message_received). GET /api/automation/node-types for the full node catalog. Use PATCH /api/automation/:flowId/toggle to activate. Cursor users can use messlo_compose_automation_flow or apply an industry pack via POST /api/industry-packs/apply."
+    },
+    {
+      "question": "How do I send order confirmations with a dynamic PDF header?",
+      "answer": "Create a template with a public header_url sample (document type) via POST /api/template/create, wait for Meta approval, then POST /api/whatsapp/send with messageType template and mediaUrl set to the per-order PDF URL. Alternatively, use POST /api/ecommerce-webhook/create and map-template for Shopify or WooCommerce order webhooks."
+    }
+  ],
+  "intro": [
+    "Messlo provides a developer-friendly REST API on top of the WhatsApp Business Platform (Cloud API).",
+    "Authenticate with X-API-Key or Authorization: ApiKey <key>."
+  ],
+  "templatePresets": {
+    "variables": {
+      "waba_id": "1248119146671221",
+      "template_name": "welcome_offer",
+      "category": "MARKETING",
+      "language": "en_US",
+      "template_type": "standard",
+      "header_text": "Hello {{name}}!",
+      "message_body": "Hi {{1}}, your order {{2}} has been confirmed. Total: {{3}}.",
+      "footer_text": "Reply STOP to unsubscribe",
+      "variable_examples": [
+        {
+          "key": "1",
+          "example": "John"
+        },
+        {
+          "key": "2",
+          "example": "ORD-9876"
+        },
+        {
+          "key": "3",
+          "example": "$49.99"
+        }
+      ],
+      "_example_title": "Template with Variables"
+    },
+    "otp": {
+      "waba_id": "1248119146671221",
+      "template_name": "otp_verification",
+      "category": "AUTHENTICATION",
+      "language": "en_US",
+      "add_security_recommendation": true,
+      "code_expiration_minutes": 10,
+      "otp_code_length": 6,
+      "otp_buttons": [
+        {
+          "otp_type": "COPY_CODE",
+          "copy_button_text": "Copy Code"
+        }
+      ],
+      "_example_title": "OTP / Authentication Template"
+    },
+    "quick_reply": {
+      "waba_id": "1248119146671221",
+      "template_name": "feedback_request",
+      "category": "UTILITY",
+      "language": "en_US",
+      "message_body": "How was your experience?",
+      "buttons": [
+        {
+          "type": "quick_reply",
+          "text": "Excellent"
+        },
+        {
+          "type": "quick_reply",
+          "text": "Good"
+        },
+        {
+          "type": "quick_reply",
+          "text": "Poor"
+        }
+      ],
+      "_example_title": "Template with Quick Reply Buttons"
+    },
+    "simple": {
+      "waba_id": "1248119146671221",
+      "template_name": "simple_announcement",
+      "category": "MARKETING",
+      "language": "en_US",
+      "message_body": "This is a simple announcement for the season.",
+      "footer_text": "Thank you"
+    }
+  },
+  "loginWithWhatsAppReadme": "# Messlo WhatsApp Authentication\n\nSDK-first \"Login with WhatsApp\" for tenant WABAs. Messlo verifies WhatsApp identity only; developers issue their own app sessions after `verify-token`.\n\n## Endpoints\n\n| Method | Path | Auth |\n|--------|------|------|\n| POST | `/v1/auth/whatsapp/start` | API key |\n| GET | `/v1/auth/whatsapp/status/:sessionId` | API key |\n| POST | `/v1/auth/verify-token` | API key or JWT |\n\n## SDK polling contract (V1)\n\n1. `POST /v1/auth/whatsapp/start` with `X-API-Key` → receive `sessionId`, `waLink`.\n   - Default: user's primary connected Cloud API (WABA) phone.\n   - Set `\"use_messlo_phone\": true` to use Messlo's shared number (no tenant WABA required). Requires `MESSLO_AUTH_SHARED_*` env on the server.\n2. Open `waLink` in the browser / deep link so the user sends `LOGIN <code>` on WhatsApp.\n3. Poll `GET /v1/auth/whatsapp/status/:sessionId` every **2 seconds** (respect `Retry-After` header).\n4. When `success: true`, send `verificationToken` to your **backend only**.\n5. Your backend calls `POST /v1/auth/verify-token` with `{ \"token\": \"...\" }` → `{ valid: true, user: { phone, name } }`.\n6. Issue your own session/JWT for the user.\n\nStop polling on HTTP **410** (`expired`) or when `expires_at` elapses (~10 minutes).\n\n## Messlo login page (`/api/auth/whatsapp-login`)\n\nUses the **same Developer API key** as `POST /v1/auth/whatsapp/start` (`WHATSAPP_LOGIN_API_KEY` = app key from Developer → Login with WhatsApp):\n\n1. Resolves linked `WhatsAppAuthApp` (personalized `LOGIN` message, per-app webhooks on success).\n2. `POST /start` → same fields as V1 including `subscribeToken`, `authAppId`, `authAppName`.\n3. `GET /events/:sessionId?token=…` — SSE (webhook pushes `verified`).\n4. `GET /status/:sessionId` once → `verificationToken` → Messlo JWT via `/complete`.\n\n## Developer V1 (`/v1/auth/whatsapp/*`)\n\n| Method | Path | Notes |\n|--------|------|--------|\n| POST | `/whatsapp/start` | Returns `subscribeToken` for SSE |\n| GET | `/whatsapp/events/:sessionId?token=` | SSE (preferred over polling) |\n| GET | `/whatsapp/status/:sessionId` | Poll fallback / one-shot token fetch |\n| POST | `/verify-token` | Validate token on **your** backend |\n\nPolling every 2s is optional; prefer SSE + webhook.\n\n## Webhooks\n\n**Meta (tenant WABA):** When the tenant connects WABA via Messlo, `setupWebhooksForWaba` subscribes Meta webhooks automatically. Inbound `LOGIN <code>` on `/webhook/whatsapp` is handled before the CRM bot pipeline. Manual Meta Console setup is only a fallback if auto-setup fails.\n\n**Per-app server (optional):** When login completes, Messlo POSTs `whatsapp.auth.verified` to the app’s `webhook_url` with header `X-Messlo-Signature`. Use the hosted URL:\n\n`POST {API_BASE}/api/whatsapp-auth/webhook/{appId}`\n\nOn app create, enable **Use Messlo hosted webhook** (default) to set this automatically. Verify the secret shown once in the dashboard.\n\n## Environment\n\nSee `mess-api/.env.example` — `MESSLO_AUTH_JWT_*`, `MESSLO_AUTH_SESSION_TTL_MS`, `MESSLO_AUTH_SHARED_*`, `META_APP_SECRET` / `FACEBOOK_APP_SECRET`.\n",
+  "mcpInstall": {
+    "cursor": {
+      "mcpServers": {
+        "messlo": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "@getmesslo/messlo-mcp"
+          ],
+          "env": {
+            "MESSLO_API_KEY": "your_key_here"
+          }
+        }
+      }
+    }
+  }
+}
