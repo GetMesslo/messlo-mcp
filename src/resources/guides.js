@@ -6,6 +6,7 @@ import { CRM_FIELD_GUIDE } from "../bundled/crm-field-guide.js";
 import { INTEGRATION_PROMPTS } from "../bundled/integration-prompts.js";
 import { INTEGRATION_GOALS } from "../bundled/plan-integration.js";
 import { CHECKOUT_GUIDE } from "../bundled/checkout-guide.js";
+import { OMNICHANNEL_GUIDE } from "../bundled/omnichannel-guide.js";
 
 /** Defaults so example resources materialize without user input. */
 const PRESET_EXAMPLE_DEFAULTS = {
@@ -13,6 +14,26 @@ const PRESET_EXAMPLE_DEFAULTS = {
 };
 
 export function registerGuideResources(server) {
+  server.registerResource(
+    "messlo-omnichannel-guide",
+    "messlo://channels/guide",
+    {
+      title: "Omnichannel messaging",
+      description:
+        "Telegram, Facebook Messenger, Instagram DM — connect, send, inbox, templates, campaigns",
+      mimeType: "application/json",
+    },
+    async () => ({
+      contents: [
+        {
+          uri: "messlo://channels/guide",
+          mimeType: "application/json",
+          text: JSON.stringify(OMNICHANNEL_GUIDE, null, 2),
+        },
+      ],
+    })
+  );
+
   server.registerResource(
     "messlo-checkout-guide",
     "messlo://checkout/guide",

@@ -59,11 +59,16 @@ export function searchDocs(query) {
     };
   }
 
+  const tokens = q.split(/\s+/).filter(Boolean);
   const endpoints = [];
   for (const section of docs.sections) {
     for (const ep of section.endpoints) {
       const hay = `${section.title} ${ep.title} ${ep.path} ${ep.description} ${ep.method}`.toLowerCase();
-      if (hay.includes(q)) {
+      const matches =
+        tokens.length <= 1
+          ? hay.includes(q)
+          : tokens.every((token) => hay.includes(token));
+      if (matches) {
         endpoints.push({ section: section.id, ...ep });
       }
     }

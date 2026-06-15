@@ -27,6 +27,11 @@ import { registerReplyMaterialTools } from "./tools/reply-materials.js";
 import { registerEcommerceTools } from "./tools/ecommerce.js";
 import { registerEcommerceWebhookTools } from "./tools/ecommerce-webhooks.js";
 import { registerWhatsAppProfileTools } from "./tools/whatsapp-profile.js";
+import { registerChannelTools } from "./tools/channels.js";
+import { registerSocialAutomationTools } from "./tools/social-automation.js";
+import { registerShopifyTools } from "./tools/shopify.js";
+import { registerWhatsAppCallingTools } from "./tools/whatsapp-calling.js";
+import { registerFacebookAdsTools } from "./tools/facebook-ads.js";
 import { registerDocResources } from "./resources/docs.js";
 import { registerGuideResources } from "./resources/guides.js";
 
@@ -35,7 +40,7 @@ export function createMessloMcpServer(config) {
 
   const server = new McpServer({
     name: "messlo",
-    version: "1.6.0",
+    version: "1.7.0",
   });
 
   registerOnboardingTools(server, client);
@@ -65,6 +70,11 @@ export function createMessloMcpServer(config) {
   registerEcommerceTools(server, client);
   registerEcommerceWebhookTools(server, client);
   registerWhatsAppProfileTools(server, client);
+  registerChannelTools(server, client);
+  registerSocialAutomationTools(server, client);
+  registerShopifyTools(server, client);
+  registerWhatsAppCallingTools(server, client);
+  registerFacebookAdsTools(server, client);
   registerDocResources(server);
   registerGuideResources(server);
 

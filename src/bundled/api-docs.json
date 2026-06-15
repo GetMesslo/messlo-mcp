@@ -924,7 +924,7 @@
         {
           "title": "Ops & integrations",
           "method": "GET",
-          "path": "/api/subscriptions/usage",
+          "path": "/api/subscription/usage",
           "description": "Agents, drip sequences, Google Sheets/Calendar, plan usage, kanban pipelines, and bulk imports.",
           "payload": {
             "contact_id": "64a1contact01",

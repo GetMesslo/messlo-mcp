@@ -1,7 +1,7 @@
 {
   "name": "@getmesslo/messlo-mcp",
-  "version": "1.6.1",
-  "description": "Messlo MCP server — API keys, templates, messaging, automations, CRM, industry packs, and Login with WhatsApp from Cursor and other IDEs",
+  "version": "1.7.0",
+  "description": "Messlo MCP server — API keys, templates, messaging, omnichannel, automations, CRM, Shopify, Facebook Ads, WhatsApp Calling, and Login with WhatsApp from Cursor and other IDEs",
   "type": "module",
   "main": "./src/index.js",
   "bin": {

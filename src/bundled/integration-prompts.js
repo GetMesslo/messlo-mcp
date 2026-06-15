@@ -48,4 +48,29 @@ export const INTEGRATION_PROMPTS = {
   login_with_whatsapp: [
     "Create a Login with WhatsApp web app for my store checkout",
   ],
+  omnichannel_setup: [
+    "List my connected Telegram, Facebook, and Instagram channels",
+    "Connect a Telegram bot and send a test message",
+    "Get Instagram OAuth URL and help me finish connection",
+  ],
+  telegram_bot: [
+    "Connect my Telegram bot and create a welcome template",
+    "Send a text message to a Telegram contact by chat id",
+  ],
+  instagram_comment_dm: [
+    "List my Instagram posts and set up comment-to-DM for keyword 'price'",
+    "Retrigger comment automation on my latest reel",
+  ],
+  shopify_whatsapp: [
+    "Connect my Shopify store and sync products to WhatsApp catalog",
+    "Push Shopify products to my WABA commerce catalog",
+  ],
+  facebook_ads: [
+    "List my Facebook ad accounts and create a traffic campaign",
+    "Show insights for my latest Facebook ad campaign",
+  ],
+  whatsapp_calling: [
+    "Set up WhatsApp calling agents and assign one to a contact",
+    "List recent WhatsApp call logs and transcriptions",
+  ],
 };

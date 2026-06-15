@@ -15,14 +15,22 @@ export function registerOnboardingTools(server, client) {
     "messlo_get_started",
     {
       description:
-        "Check Messlo integration readiness: WABA connections, phone numbers, API keys (masked), and suggested next steps. Call this first when helping someone integrate Messlo.",
-      inputSchema: {},
+        "Check Messlo integration readiness: WABA connections, phone numbers, API keys (masked), optional omnichannel channels, and suggested next steps. Call this first when helping someone integrate Messlo.",
+      inputSchema: {
+        workspace_id: z
+          .string()
+          .optional()
+          .describe(
+            "Workspace _id — when provided, also checks omnichannel channel connections"
+          ),
+      },
     },
-    async () => {
+    async ({ workspace_id } = {}) => {
       const steps = [];
       let connections = null;
       let phones = null;
       let keys = null;
+      let channels = null;
       const errors = [];
 
       try {
@@ -41,6 +49,16 @@ export function registerOnboardingTools(server, client) {
         keys = await client.get("/api/api-keys?page=1&limit=10");
       } catch (e) {
         errors.push(`api-keys: ${e.message}`);
+      }
+
+      if (workspace_id) {
+        try {
+          channels = await client.get(
+            `/api/channels?workspace_id=${encodeURIComponent(workspace_id)}`
+          );
+        } catch (e) {
+          errors.push(`channels: ${e.message}`);
+        }
       }
 
       const connList =
@@ -100,18 +118,42 @@ export function registerOnboardingTools(server, client) {
       steps.push({
         priority: 4,
         action:
-          "Bot flows (any industry): messlo_get_automation_builder_guide → messlo_compose_automation_flow or messlo_get_automation_preset → messlo_create_automation_flow",
+          "Omnichannel (Telegram, Facebook, Instagram): messlo_list_channels → messlo_connect_channel or messlo_get_instagram_oauth_config. See messlo://channels/guide",
       });
 
       steps.push({
         priority: 5,
+        action:
+          "Bot flows (any industry): messlo_get_automation_builder_guide → messlo_compose_automation_flow or messlo_get_automation_preset → messlo_create_automation_flow",
+      });
+
+      steps.push({
+        priority: 6,
         action: "Use messlo_search_docs or messlo://docs/overview for endpoint reference",
       });
+
+      const channelList =
+        channels?.connections || channels?.data || [];
+      if (workspace_id && channelList.length > 0) {
+        steps.push({
+          priority: 3,
+          status: "done",
+          action: `Omnichannel connected (${channelList.length} channel(s))`,
+          channels: channelList,
+        });
+      } else if (workspace_id) {
+        steps.push({
+          priority: 3,
+          action:
+            "Connect Telegram, Facebook, or Instagram via messlo_connect_channel (pass workspace_id)",
+        });
+      }
 
       return textResult({
         ready: connList.length > 0 && phoneList.length > 0 && keyList.length > 0,
         connections: connList,
         phone_numbers: phoneList,
+        channels: channelList.length ? channelList : undefined,
         api_keys_summary: keyList.map((k) => ({
           id: k.id,
           name: k.name,
@@ -146,6 +188,12 @@ export function registerOnboardingTools(server, client) {
             "ops_integrations",
             "ecommerce_catalog",
             "ecommerce_checkout",
+            "omnichannel_setup",
+            "telegram_bot",
+            "instagram_comment_dm",
+            "shopify_whatsapp",
+            "facebook_ads",
+            "whatsapp_calling",
           ])
           .describe(`Available: ${Object.keys(INTEGRATION_GOALS).join(", ")}`),
         business_type: z
@@ -183,6 +231,7 @@ export function registerOnboardingTools(server, client) {
         plan_goals: MCP_PLAN_GOALS,
         resources: [
           "messlo://docs/overview",
+          "messlo://channels/guide",
           "messlo://automation/guide",
           "messlo://checkout/guide",
           "messlo://crm/field-guide",
@@ -195,7 +244,7 @@ export function registerOnboardingTools(server, client) {
     "messlo_list_connections",
     {
       description:
-        "List WhatsApp Business Account (WABA) connections and registered phone numbers.",
+        "List WhatsApp Business Account (WABA) connections, phone numbers, and note omnichannel channels via messlo_list_channels.",
       inputSchema: {},
     },
     async () => {
@@ -203,7 +252,15 @@ export function registerOnboardingTools(server, client) {
         client.get("/api/whatsapp/connections"),
         client.get("/api/whatsapp/phone-numbers"),
       ]);
-      return textResult({ connections, phone_numbers: phones });
+      const connList =
+        connections?.data || connections?.connections || [];
+      const phoneList =
+        phones?.phone_numbers || phones?.data || [];
+      return textResult({
+        connections: connList,
+        phone_numbers: phoneList,
+        total_wabas: connections?.total_wabas,
+      });
     }
   );
 }
