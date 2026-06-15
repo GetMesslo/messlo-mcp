@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-04T14:16:14.163Z",
+  "generatedAt": "2026-06-15T11:31:22.693Z",
   "sectionIds": [
     "infrastructure",
     "whatsapp-auth",
@@ -924,7 +924,7 @@
         {
           "title": "Ops & integrations",
           "method": "GET",
-          "path": "/api/subscription/usage",
+          "path": "/api/subscriptions/usage",
           "description": "Agents, drip sequences, Google Sheets/Calendar, plan usage, kanban pipelines, and bulk imports.",
           "payload": {
             "contact_id": "64a1contact01",
