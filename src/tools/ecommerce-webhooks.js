@@ -21,9 +21,18 @@ export function registerEcommerceWebhookTools(server, client) {
       if (search) qs.set("search", search);
       if (is_active !== undefined) qs.set("is_active", String(is_active));
       const q = qs.toString();
-      return textResult(
-        await client.get(`/api/ecommerce-webhook/list${q ? `?${qs}` : ""}`)
+      const result = await client.get(
+        `/api/ecommerce-webhook/list${q ? `?${qs}` : ""}`
       );
+      const webhooks =
+        result?.data?.webhooks || result?.webhooks || [];
+      const pagination = result?.data?.pagination || result?.pagination;
+      return textResult({
+        success: result?.success !== false,
+        webhooks,
+        pagination,
+        total: pagination?.totalItems ?? webhooks.length,
+      });
     }
   );
 

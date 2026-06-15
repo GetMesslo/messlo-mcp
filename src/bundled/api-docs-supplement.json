@@ -20,10 +20,78 @@
     {
       "id": "conversations",
       "title": "Conversations",
-      "description": "Debug inbox and message threads.",
+      "description": "Unified inbox and message threads (WhatsApp and omnichannel).",
       "endpoints": [
-        { "title": "List chats", "method": "GET", "path": "/api/whatsapp/chats", "description": "Recent conversations.", "payload": null },
-        { "title": "List messages", "method": "GET", "path": "/api/whatsapp/messages", "description": "Thread messages; requires contact_id query.", "payload": null }
+        { "title": "List chats", "method": "GET", "path": "/api/whatsapp/chats", "description": "Recent conversations. Query platform=whatsapp|telegram|facebook|instagram.", "payload": null },
+        { "title": "List messages", "method": "GET", "path": "/api/whatsapp/messages", "description": "Thread messages; requires contact_id query.", "payload": null },
+        { "title": "Send message", "method": "POST", "path": "/api/whatsapp/send", "description": "Unified send. WhatsApp: contact_no + whatsapp_phone_number. Omnichannel: contact_id or platform + recipient_id.", "payload": { "contact_id": "", "platform": "telegram", "message": "Hello" } }
+      ]
+    },
+    {
+      "id": "channels",
+      "title": "Omnichannel connections",
+      "description": "Connect Telegram, Facebook Messenger, and Instagram DM.",
+      "endpoints": [
+        { "title": "List channels", "method": "GET", "path": "/api/channels", "description": "Requires workspace_id query.", "payload": null },
+        { "title": "Connect channel", "method": "POST", "path": "/api/channels/connect", "description": "telegram: bot_token. facebook: access_token. instagram: code.", "payload": { "platform": "telegram", "workspace_id": "", "bot_token": "" } },
+        { "title": "Instagram OAuth config", "method": "GET", "path": "/api/channels/instagram/oauth-config", "description": "Returns authorize_url for browser OAuth.", "payload": null },
+        { "title": "Disconnect channel", "method": "DELETE", "path": "/api/channels/:id", "description": "", "payload": null }
+      ]
+    },
+    {
+      "id": "omnichannel-messaging",
+      "title": "Omnichannel messaging",
+      "description": "Send and inbox across Telegram, Facebook, Instagram.",
+      "endpoints": [
+        { "title": "Send omnichannel", "method": "POST", "path": "/api/whatsapp/send", "description": "contact_id preferred for FB/IG.", "payload": { "contact_id": "", "messageType": "text", "message": "Hi" } },
+        { "title": "Omnichannel template", "method": "POST", "path": "/api/template/create", "description": "platform=instagram|facebook|telegram, no waba_id.", "payload": { "platform": "telegram", "template_name": "welcome", "message_body": "Hello" } },
+        { "title": "Omnichannel campaign", "method": "POST", "path": "/api/campaigns", "description": "platform=telegram|facebook|instagram|all", "payload": { "name": "Promo", "platform": "telegram", "template_name": "welcome" } }
+      ]
+    },
+    {
+      "id": "social-automation",
+      "title": "Social automation (comment-to-DM)",
+      "description": "Instagram and Facebook comment keyword automations.",
+      "endpoints": [
+        { "title": "List automations", "method": "GET", "path": "/api/social-automation", "description": "", "payload": null },
+        { "title": "Create automation", "method": "POST", "path": "/api/social-automation", "description": "", "payload": { "workspace_id": "", "platform": "instagram", "automation_type": "post_comment", "keywords": ["price"] } },
+        { "title": "Fetch media", "method": "POST", "path": "/api/social-automation/media", "description": "List posts/reels/stories.", "payload": { "workspace_id": "", "platform": "instagram" } },
+        { "title": "Retrigger comments", "method": "POST", "path": "/api/social-automation/retrigger", "description": "", "payload": { "workspace_id": "", "platform": "instagram", "media_id": "" } }
+      ]
+    },
+    {
+      "id": "shopify",
+      "title": "Shopify integration",
+      "description": "Connect Shopify store and sync products to WhatsApp catalog.",
+      "endpoints": [
+        { "title": "Get config", "method": "GET", "path": "/api/shopify/config", "description": "", "payload": null },
+        { "title": "Save config", "method": "POST", "path": "/api/shopify/config", "description": "", "payload": { "shop_domain": "store.myshopify.com", "admin_api_access_token": "" } },
+        { "title": "Sync products", "method": "POST", "path": "/api/shopify/sync", "description": "", "payload": null },
+        { "title": "Setup catalog", "method": "POST", "path": "/api/shopify/setup-catalog", "description": "", "payload": { "waba_id": "" } },
+        { "title": "Push to WhatsApp", "method": "POST", "path": "/api/shopify/push-to-whatsapp", "description": "", "payload": { "waba_id": "" } }
+      ]
+    },
+    {
+      "id": "facebook-ads",
+      "title": "Facebook Ads",
+      "description": "Manage Facebook ad campaigns, ad sets, and ads.",
+      "endpoints": [
+        { "title": "List ad accounts", "method": "GET", "path": "/api/facebook-ads/ad-accounts", "description": "", "payload": null },
+        { "title": "List campaigns", "method": "GET", "path": "/api/facebook-ads", "description": "", "payload": null },
+        { "title": "Create campaign", "method": "POST", "path": "/api/facebook-ads", "description": "multipart for image/video creative.", "payload": { "ad_account_id": "", "name": "Campaign" } },
+        { "title": "Ad insights", "method": "GET", "path": "/api/facebook-ads/insights/:level/:id", "description": "", "payload": null },
+        { "title": "Search targeting", "method": "GET", "path": "/api/facebook-ads/targeting/search", "description": "", "payload": null }
+      ]
+    },
+    {
+      "id": "whatsapp-calling",
+      "title": "WhatsApp Calling",
+      "description": "Voice calling agents, settings, and call logs.",
+      "endpoints": [
+        { "title": "Get settings", "method": "GET", "path": "/api/whatsapp/calling/settings", "description": "phone_number_id query.", "payload": null },
+        { "title": "List agents", "method": "GET", "path": "/api/whatsapp/calling/agents", "description": "", "payload": null },
+        { "title": "Assign agent", "method": "POST", "path": "/api/whatsapp/calling/assign-agent", "description": "", "payload": { "contact_id": "", "agent_id": "" } },
+        { "title": "List call logs", "method": "GET", "path": "/api/whatsapp/calling/logs", "description": "", "payload": null }
       ]
     },
     {
@@ -101,7 +169,7 @@
         { "title": "List sequences", "method": "GET", "path": "/api/sequences", "description": "waba_id required.", "payload": null },
         { "title": "Google connect", "method": "GET", "path": "/api/google/connect", "description": "OAuth URL.", "payload": null },
         { "title": "Write sheet", "method": "POST", "path": "/api/google/sheets/:sheet_id/values", "description": "", "payload": { "range": "A1", "values": [] } },
-        { "title": "Usage", "method": "GET", "path": "/api/subscriptions/usage", "description": "Plan limits.", "payload": null },
+        { "title": "Usage", "method": "GET", "path": "/api/subscription/usage", "description": "Plan limits.", "payload": null },
         { "title": "Import contacts", "method": "POST", "path": "/api/contacts/import", "description": "multipart CSV.", "payload": null },
         { "title": "Kanban funnels", "method": "GET", "path": "/api/kanban-funnels", "description": "", "payload": null }
       ]
@@ -153,8 +221,12 @@
       "answer": "Call messlo_get_form and use data.flow.flow_id (Meta Flow id), not the MongoDB form _id."
     },
     {
-      "question": "How do I set up keyword auto-replies?",
-      "answer": "Use messlo_create_message_bot with keywords and reply_content for simple text replies."
+      "question": "How do I send to Telegram or Instagram?",
+      "answer": "Connect via POST /api/channels/connect, then POST /api/whatsapp/send with contact_id (from inbox) or platform=telegram with recipient_id. Use messlo_list_chats with platform filter."
+    },
+    {
+      "question": "How do Instagram comment-to-DM automations work?",
+      "answer": "POST /api/social-automation with platform=instagram, automation_type=post_comment, keywords, and reply_type. Use POST /api/social-automation/media to list target posts."
     }
   ]
 }

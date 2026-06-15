@@ -9,7 +9,7 @@ export function registerSubscriptionOpsTools(server, client) {
         "Plan limits vs usage (contacts, templates, campaigns, tags) and subscription status.",
       inputSchema: {},
     },
-    async () => textResult(await client.get("/api/subscriptions/usage"))
+    async () => textResult(await client.get("/api/subscription/usage"))
   );
 
   server.registerTool(
@@ -19,6 +19,6 @@ export function registerSubscriptionOpsTools(server, client) {
         "Current subscription plan, features, and detailed usage (check before creating resources).",
       inputSchema: {},
     },
-    async () => textResult(await client.get("/api/subscriptions/my-subscription"))
+    async () => textResult(await client.get("/api/subscription/my-subscription"))
   );
 }

@@ -20,6 +20,22 @@ import {
   MCP_TOOL_CATALOG,
 } from "../src/bundled/mcp-tool-catalog.js";
 import { CHECKOUT_GUIDE } from "../src/bundled/checkout-guide.js";
+import { OMNICHANNEL_GUIDE } from "../src/bundled/omnichannel-guide.js";
+import { callMcpTool, parseToolJson, listRegisteredToolNames } from "./helpers/mcp-tool.js";
+
+/** Pre-v1.7 tools that must remain registered. */
+const LEGACY_TOOL_NAMES = [
+  "messlo_get_started",
+  "messlo_send_message",
+  "messlo_send_template",
+  "messlo_create_template",
+  "messlo_create_campaign",
+  "messlo_setup_waba_webhooks",
+  "messlo_create_automation_flow",
+  "messlo_list_connections",
+  "messlo_create_ecommerce_webhook",
+  "messlo_call_api",
+];
 
 describe("allowlist", () => {
   it("allows public API paths", () => {
@@ -62,7 +78,7 @@ describe("bundled docs", () => {
     const forms = searchDocs("forms");
     assert.ok(forms.endpoints?.some((e) => e.path.includes("/api/forms")));
     const ops = searchDocs("usage");
-    assert.ok(ops.endpoints?.some((e) => e.path.includes("/api/subscriptions/usage")));
+    assert.ok(ops.endpoints?.some((e) => e.path.includes("/api/subscription/usage")));
     const polish = searchDocs("webhook");
     assert.ok(
       polish.endpoints?.some((e) =>
@@ -73,6 +89,31 @@ describe("bundled docs", () => {
     assert.ok(
       checkout.endpoints?.some((e) =>
         e.path.includes("/api/ecommerce-webhook")
+      )
+    );
+  });
+
+  it("supplement docs include omnichannel and new feature sections", () => {
+    const docs = loadBundledDocs();
+    const ids = docs.sections.map((s) => s.id);
+    for (const id of [
+      "channels",
+      "omnichannel-messaging",
+      "social-automation",
+      "shopify",
+      "facebook-ads",
+      "whatsapp-calling",
+    ]) {
+      assert.ok(ids.includes(id), `missing section: ${id}`);
+    }
+    const channels = searchDocs("channels");
+    assert.ok(
+      channels.endpoints?.some((e) => e.path.includes("/api/channels"))
+    );
+    const social = searchDocs("social-automation");
+    assert.ok(
+      social.endpoints?.some((e) =>
+        e.path.includes("/api/social-automation")
       )
     );
   });
@@ -144,6 +185,37 @@ describe("plan integration", () => {
     assert.ok(tools.includes("messlo_create_ecommerce_webhook"));
     assert.ok(tools.includes("messlo_send_template"));
   });
+
+  it("omnichannel_setup goal includes channel tools", () => {
+    const tools = planIntegration({ goal: "omnichannel_setup" }).tool_sequence.map(
+      (s) => s.tool
+    );
+    assert.ok(tools.includes("messlo_list_channels"));
+    assert.ok(tools.includes("messlo_connect_channel"));
+    assert.ok(tools.includes("messlo_send_message"));
+  });
+
+  it("instagram_comment_dm goal includes social automation tools", () => {
+    const tools = planIntegration({
+      goal: "instagram_comment_dm",
+    }).tool_sequence.map((s) => s.tool);
+    assert.ok(tools.includes("messlo_create_social_automation"));
+    assert.ok(tools.includes("messlo_fetch_social_media"));
+  });
+
+  it("new plan goals are in MCP_PLAN_GOALS", () => {
+    for (const goal of [
+      "omnichannel_setup",
+      "telegram_bot",
+      "instagram_comment_dm",
+      "shopify_whatsapp",
+      "facebook_ads",
+      "whatsapp_calling",
+    ]) {
+      assert.ok(MCP_PLAN_GOALS.includes(goal), goal);
+      assert.ok(INTEGRATION_GOALS[goal], goal);
+    }
+  });
 });
 
 describe("mcp catalog", () => {
@@ -151,6 +223,20 @@ describe("mcp catalog", () => {
     assert.ok(MCP_PLAN_GOALS.includes("ecommerce_checkout"));
     const commerce = MCP_TOOL_CATALOG.find((c) => c.lane === "commerce");
     assert.ok(commerce.tools.includes("messlo_create_ecommerce_webhook"));
+  });
+
+  it("lists omnichannel and new feature lanes", () => {
+    const lanes = MCP_TOOL_CATALOG.map((c) => c.lane);
+    for (const lane of ["channels", "social", "shopify", "ads", "calling"]) {
+      assert.ok(lanes.includes(lane), lane);
+    }
+    const channels = MCP_TOOL_CATALOG.find((c) => c.lane === "channels");
+    assert.ok(channels.tools.includes("messlo_connect_channel"));
+  });
+
+  it("omnichannel guide references key tools", () => {
+    assert.ok(OMNICHANNEL_GUIDE.connection.list === "messlo_list_channels");
+    assert.ok(OMNICHANNEL_GUIDE.platforms.includes("telegram"));
   });
 
   it("checkout guide references key tools", () => {
@@ -234,5 +320,64 @@ describe("MCP server", () => {
     });
     assert.ok(server);
     assert.ok(server.server);
+  });
+});
+
+describe("legacy backward compatibility", () => {
+  const server = createMessloMcpServer({
+    apiKey: "test_key_for_smoke_only",
+    baseUrl: "https://api.messlo.com",
+  });
+  const registered = new Set(listRegisteredToolNames(server));
+
+  it("keeps pre-v1.7 core tools registered", () => {
+    for (const name of LEGACY_TOOL_NAMES) {
+      assert.ok(registered.has(name), `missing legacy tool: ${name}`);
+    }
+  });
+
+  it("whatsapp_setup plan goal is unchanged", () => {
+    const tools = planIntegration({ goal: "whatsapp_setup" }).tool_sequence.map(
+      (s) => s.tool
+    );
+    assert.ok(tools.includes("messlo_send_message"));
+    assert.ok(tools.includes("messlo_setup_waba_webhooks"));
+    assert.ok(tools.includes("messlo_list_connections"));
+  });
+
+  it("send_message still requires whatsapp fields without omnichannel path", async () => {
+    const data = parseToolJson(
+      await callMcpTool(server, "messlo_send_message", { message: "hi" })
+    );
+    assert.ok(data.error);
+    assert.match(data.error, /contact_no/);
+  });
+
+  it("create_template still requires waba_id for whatsapp templates", async () => {
+    const data = parseToolJson(
+      await callMcpTool(server, "messlo_create_template", {
+        template_name: "legacy_test",
+      })
+    );
+    assert.ok(data.error);
+    assert.match(data.error, /waba_id/);
+  });
+
+  it("create_campaign still requires waba_id when platform is whatsapp", async () => {
+    const data = parseToolJson(
+      await callMcpTool(server, "messlo_create_campaign", {
+        name: "Legacy",
+        template_name: "hello",
+      })
+    );
+    assert.ok(data.error);
+    assert.match(data.error, /waba_id/);
+  });
+
+  it("get_started accepts empty args (workspace_id optional)", async () => {
+    const tool = server._registeredTools.messlo_get_started;
+    assert.ok(tool?.handler);
+    const schema = tool.inputSchema || tool.schema;
+    assert.ok(schema);
   });
 });

@@ -10,17 +10,25 @@ const presetSchema = z.enum([
   "carousel",
 ]);
 
+const omnichannelPlatformSchema = z.enum(["instagram", "facebook", "telegram"]);
+
 export function registerTemplateTools(server, client) {
   server.registerTool(
     "messlo_create_template",
     {
       description:
-        "Create and submit a WhatsApp message template to Meta. Media headers use a public HTTPS URL; Messlo verifies the URL is reachable before submitting to Meta (same requirement WhatsApp has).",
+        "Create a message template. WhatsApp: requires waba_id, submits to Meta. Omnichannel (instagram/facebook/telegram): pass platform, omit waba_id — locally approved without Meta submission.",
       inputSchema: {
         preset: presetSchema.optional().describe(
           "simple | variables | otp | quick_reply | carousel — merges example structure"
         ),
-        waba_id: z.string().describe("WABA ID from messlo_list_connections"),
+        platform: omnichannelPlatformSchema
+          .optional()
+          .describe("Omnichannel platform; omit for WhatsApp/Meta templates"),
+        waba_id: z
+          .string()
+          .optional()
+          .describe("WABA ID from messlo_list_connections (required for WhatsApp)"),
         template_name: z
           .string()
           .describe("Lowercase snake_case template name"),
@@ -51,8 +59,13 @@ export function registerTemplateTools(server, client) {
     },
     async (args) => {
       const docs = loadBundledDocs();
-      const { preset, extra, ...fields } = args;
-      let payload = { ...fields };
+      const { preset, extra, platform, waba_id, ...fields } = args;
+      if (!platform && !waba_id) {
+        return textResult({
+          error: "waba_id is required for WhatsApp templates, or pass platform for omnichannel.",
+        });
+      }
+      let payload = { ...fields, platform, waba_id };
 
       if (preset && docs.templatePresets?.[preset]) {
         const example = { ...docs.templatePresets[preset] };
@@ -77,18 +90,32 @@ export function registerTemplateTools(server, client) {
   server.registerTool(
     "messlo_list_templates",
     {
-      description: "List WhatsApp message templates in the workspace.",
+      description:
+        "List message templates. Pass platform=instagram|facebook|telegram for omnichannel templates.",
       inputSchema: {
+        waba_id: z
+          .string()
+          .optional()
+          .describe("Required for WhatsApp templates (from messlo_list_connections)"),
+        platform: omnichannelPlatformSchema.optional(),
         page: z.number().int().min(1).optional(),
         limit: z.number().int().min(1).max(100).optional(),
       },
     },
-    async ({ page, limit }) => {
+    async ({ waba_id, platform, page, limit }) => {
+      if (!platform && !waba_id) {
+        return textResult({
+          error:
+            "waba_id is required to list WhatsApp templates, or pass platform for omnichannel templates.",
+        });
+      }
       const qs = new URLSearchParams();
+      if (waba_id) qs.set("waba_id", waba_id);
+      if (platform) qs.set("platform", platform);
       if (page) qs.set("page", String(page));
       if (limit) qs.set("limit", String(limit));
       const q = qs.toString();
-      const result = await client.get(`/api/template${q ? `?${q}` : ""}`);
+      const result = await client.get(`/api/template?${q}`);
       return textResult(result);
     }
   );

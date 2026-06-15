@@ -33,7 +33,7 @@ describeE2e("messlo-mcp E2E (live API)", () => {
   before(() => {
     server = createMessloMcpServer(e2eConfig());
     const names = listRegisteredToolNames(server);
-    assert.ok(names.length >= 100, `expected 100+ tools, got ${names.length}`);
+    assert.ok(names.length >= 160, `expected 160+ tools, got ${names.length}`);
   });
 
   it("messlo_list_connections — auth and WABA list", async () => {
@@ -41,7 +41,7 @@ describeE2e("messlo-mcp E2E (live API)", () => {
       await callMcpTool(server, "messlo_list_connections", {})
     );
     const list = data.connections || data.data || [];
-    assert.ok(Array.isArray(list), "connections should be an array");
+    assert.ok(Array.isArray(list), `connections should be an array, got: ${JSON.stringify(data).slice(0, 200)}`);
     if (list.length > 0) {
       wabaId = list[0].id || list[0]._id;
       assert.ok(wabaId, "connection should have id");
@@ -63,7 +63,10 @@ describeE2e("messlo-mcp E2E (live API)", () => {
     const data = parseToolJson(
       await callMcpTool(server, "messlo_get_usage", {})
     );
-    assert.ok(data.success !== false, JSON.stringify(data).slice(0, 500));
+    assert.ok(
+      data.success !== false && (data.data !== undefined || data.usage !== undefined),
+      JSON.stringify(data).slice(0, 500)
+    );
   });
 
   it("messlo_search_docs — bundled + supplement", async () => {
@@ -99,9 +102,55 @@ describeE2e("messlo-mcp E2E (live API)", () => {
     assert.ok(data.plan_goals?.includes("inbound_automation"));
   });
 
-  it("messlo_list_templates", async () => {
+  it("messlo_search_docs — omnichannel sections", async () => {
     const data = parseToolJson(
-      await callMcpTool(server, "messlo_list_templates", { limit: 5 })
+      await callMcpTool(server, "messlo_search_docs", {
+        query: "channels",
+      })
+    );
+    const paths = (data.endpoints || []).map((e) => e.path);
+    assert.ok(
+      paths.some((p) => p.includes("/api/channels")),
+      `expected channels endpoints, got: ${paths.slice(0, 5).join(", ")}`
+    );
+  });
+
+  it("messlo_get_shopify_config — read-only", async () => {
+    const data = parseToolJson(
+      await callMcpTool(server, "messlo_get_shopify_config", {})
+    );
+    assert.ok(data.success !== false || data.config !== undefined);
+  });
+
+  it("messlo_list_call_agents — read-only", async () => {
+    const data = parseToolJson(
+      await callMcpTool(server, "messlo_list_call_agents", { limit: 5 })
+    );
+    assert.ok(Array.isArray(data) || data.success !== false || Array.isArray(data.data));
+  });
+
+  it("messlo_plan_integration — omnichannel goal", async () => {
+    const data = parseToolJson(
+      await callMcpTool(server, "messlo_plan_integration", {
+        goal: "omnichannel_setup",
+      })
+    );
+    assert.ok(data.tool_sequence?.length >= 4);
+    assert.ok(
+      data.tool_sequence.some((s) => s.tool === "messlo_list_channels")
+    );
+  });
+
+  it("messlo_list_templates", async (t) => {
+    if (!wabaId) {
+      t.skip("no WABA on account — connect WhatsApp to list templates");
+      return;
+    }
+    const data = parseToolJson(
+      await callMcpTool(server, "messlo_list_templates", {
+        waba_id: wabaId,
+        limit: 5,
+      })
     );
     assert.ok(
       data.data !== undefined ||
@@ -122,10 +171,10 @@ describeE2e("messlo-mcp E2E (live API)", () => {
     const data = parseToolJson(
       await callMcpTool(server, "messlo_get_automation_node_types", {})
     );
-    assert.ok(
-      data.data?.node_types?.length > 0 || data.node_types?.length > 0,
-      "node types catalog"
-    );
+    const nodeTypes = Array.isArray(data.data)
+      ? data.data
+      : data.data?.node_types || data.node_types;
+    assert.ok(nodeTypes?.length > 0, "node types catalog");
   });
 
   it("messlo_list_segments", async () => {
@@ -202,6 +251,9 @@ describeE2e("messlo-mcp E2E (live API)", () => {
     const webhooks = parseToolJson(
       await callMcpTool(server, "messlo_list_ecommerce_webhooks", { limit: 5 })
     );
-    assert.ok(webhooks.webhooks !== undefined || Array.isArray(webhooks.data));
+    assert.ok(
+      Array.isArray(webhooks.webhooks) || Array.isArray(webhooks.data?.webhooks),
+      `unexpected webhooks shape: ${JSON.stringify(webhooks).slice(0, 200)}`
+    );
   });
 });

@@ -133,6 +133,70 @@ export const INTEGRATION_GOALS = {
       { tool: "messlo_verify_whatsapp_login_token", why: "Validate JWT server-side" },
     ],
   },
+  omnichannel_setup: {
+    title: "Connect Telegram, Facebook, or Instagram and send messages",
+    steps: [
+      { tool: "messlo_get_started", why: "Check workspace readiness" },
+      { tool: "messlo_list_channels", why: "See connected omnichannel accounts" },
+      {
+        tool: "messlo_connect_channel",
+        why: "Telegram: bot_token. Instagram: code after OAuth. Facebook: access_token",
+      },
+      {
+        tool: "messlo_get_instagram_oauth_config",
+        why: "Get authorize_url for Instagram OAuth (browser step)",
+      },
+      { tool: "messlo_list_chats", why: "Find contact_id from omnichannel inbox" },
+      { tool: "messlo_send_message", why: "Send with contact_id or platform+recipient_id" },
+    ],
+  },
+  telegram_bot: {
+    title: "Telegram bot messaging and templates",
+    steps: [
+      { tool: "messlo_connect_channel", why: "platform=telegram with bot_token" },
+      { tool: "messlo_create_template", why: "platform=telegram (no waba_id)" },
+      { tool: "messlo_send_message", why: "platform=telegram with recipient_id" },
+    ],
+  },
+  instagram_comment_dm: {
+    title: "Instagram comment-to-DM automation",
+    steps: [
+      { tool: "messlo_list_channels", why: "Confirm Instagram connected" },
+      { tool: "messlo_fetch_social_media", why: "List posts/reels to target" },
+      { tool: "messlo_create_social_automation", why: "Create comment keyword automation" },
+      { tool: "messlo_retrigger_social_comments", why: "Process existing comments on a post" },
+    ],
+  },
+  shopify_whatsapp: {
+    title: "Shopify store → WhatsApp catalog",
+    steps: [
+      { tool: "messlo_get_shopify_config", why: "Check existing Shopify connection" },
+      { tool: "messlo_save_shopify_config", why: "Connect shop domain and token" },
+      { tool: "messlo_sync_shopify_products", why: "Pull products into Messlo" },
+      { tool: "messlo_setup_shopify_catalog", why: "Link Meta commerce catalog" },
+      { tool: "messlo_push_shopify_to_whatsapp", why: "Push products to WhatsApp" },
+    ],
+  },
+  facebook_ads: {
+    title: "Facebook Ads campaigns",
+    steps: [
+      { tool: "messlo_list_facebook_ad_accounts", why: "Pick ad_account_id" },
+      { tool: "messlo_create_facebook_ad_campaign", why: "Create campaign with ad sets" },
+      { tool: "messlo_create_facebook_ad_set", why: "Add ad set if not in campaign payload" },
+      { tool: "messlo_create_facebook_ad", why: "Create ad with image_file_path if needed" },
+      { tool: "messlo_get_facebook_ad_insights", why: "Check performance" },
+    ],
+  },
+  whatsapp_calling: {
+    title: "WhatsApp voice calling setup",
+    steps: [
+      { tool: "messlo_list_connections", why: "Get phone_number_id" },
+      { tool: "messlo_get_call_settings", why: "Review calling config" },
+      { tool: "messlo_create_call_agent", why: "Add call agents" },
+      { tool: "messlo_assign_call_agent", why: "Assign agent to contact" },
+      { tool: "messlo_list_call_logs", why: "Review call history" },
+    ],
+  },
 };
 
 export function planIntegration({ goal, business_type, notes }) {

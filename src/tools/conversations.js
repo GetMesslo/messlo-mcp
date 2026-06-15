@@ -1,24 +1,36 @@
 import * as z from "zod";
 import { textResult } from "../utils/text.js";
 
+const inboxPlatformSchema = z.enum([
+  "whatsapp",
+  "telegram",
+  "facebook",
+  "instagram",
+]);
+
 export function registerConversationTools(server, client) {
   server.registerTool(
     "messlo_list_chats",
     {
       description:
-        "List recent WhatsApp conversations (inbox). Use to debug automations and find contact_id for messlo_list_messages.",
+        "List recent conversations (unified inbox). WhatsApp and omnichannel. For omnichannel, whatsapp_phone_number_id is the connection id (Telegram bot id, FB page id, or IG account id).",
       inputSchema: {
         whatsapp_phone_number_id: z
           .string()
           .optional()
-          .describe("MongoDB phone number id; uses primary if omitted (owner accounts)"),
+          .describe(
+            "Phone number id (WhatsApp) or connection id (Telegram/FB/IG); uses primary if omitted"
+          ),
+        platform: inboxPlatformSchema
+          .optional()
+          .describe("Filter inbox by platform"),
         search: z.string().optional(),
         page: z.number().int().min(1).optional().default(1),
         limit: z.number().int().min(1).max(50).optional().default(15),
         provider: z.string().optional(),
       },
     },
-    async ({ whatsapp_phone_number_id, search, page, limit, provider }) => {
+    async ({ whatsapp_phone_number_id, platform, search, page, limit, provider }) => {
       const qs = new URLSearchParams({
         page: String(page),
         limit: String(limit),
@@ -26,6 +38,7 @@ export function registerConversationTools(server, client) {
       if (whatsapp_phone_number_id) {
         qs.set("whatsapp_phone_number_id", whatsapp_phone_number_id);
       }
+      if (platform) qs.set("platform", platform);
       if (search) qs.set("search", search);
       if (provider) qs.set("provider", provider);
       return textResult(await client.get(`/api/whatsapp/chats?${qs}`));

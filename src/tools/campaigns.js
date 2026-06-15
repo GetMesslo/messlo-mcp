@@ -1,15 +1,30 @@
 import * as z from "zod";
 import { textResult } from "../utils/text.js";
 
+const campaignPlatformSchema = z.enum([
+  "whatsapp",
+  "telegram",
+  "facebook",
+  "instagram",
+  "all",
+]);
+
 export function registerCampaignTools(server, client) {
   server.registerTool(
     "messlo_create_campaign",
     {
       description:
-        "Create a WhatsApp broadcast campaign (bulk template send). See messlo_search_docs query=campaign for recipient_type options.",
+        "Create a broadcast campaign. WhatsApp (default): requires waba_id. Omnichannel: set platform to telegram|facebook|instagram|all and omit waba_id. See messlo_search_docs query=campaign for recipient_type options.",
       inputSchema: {
         name: z.string(),
-        waba_id: z.string(),
+        platform: campaignPlatformSchema
+          .optional()
+          .default("whatsapp")
+          .describe("Target platform; default whatsapp"),
+        waba_id: z
+          .string()
+          .optional()
+          .describe("Required for whatsapp platform"),
         template_name: z.string().describe("Approved template name"),
         recipient_type: z
           .enum(["all_contacts", "specific_contacts", "tags"])
@@ -22,8 +37,16 @@ export function registerCampaignTools(server, client) {
         extra: z.record(z.unknown()).optional(),
       },
     },
-    async ({ extra, ...fields }) => {
+    async ({ extra, platform, waba_id, ...fields }) => {
+      const resolvedPlatform = platform || "whatsapp";
+      if (resolvedPlatform === "whatsapp" && !waba_id) {
+        return textResult({
+          error: "waba_id is required for whatsapp campaigns.",
+        });
+      }
       const result = await client.post("/api/campaigns", {
+        platform: resolvedPlatform,
+        waba_id,
         ...fields,
         ...(extra || {}),
       });
